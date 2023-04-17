@@ -131,9 +131,21 @@ namespace BeatSaber_DynamicCurve.Algorithm
 
         public static bool SameDirection(double before, double after)
         {
-            if(before >= after - 67.5 && before <= after + 67.5)
+            if(before - after <= 180)
             {
-                return true;
+                var diff = Math.Abs(before - after);
+                if (diff <= 67.5)
+                {
+                    return true;
+                }
+            }
+            else if(before - after > 180)
+            {
+                var diff = 360 - Math.Abs(before - after);
+                if (diff <= 67.5)
+                {
+                    return true;
+                }
             }
 
             return false;
