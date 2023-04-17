@@ -7,24 +7,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
 {
     internal class Helper
     {
-        #region Array
-
-        public static int[] VerticalSwing = { 0, 1, 4, 5, 6, 7 };
-        public static int[] HorizontalSwing = { 2, 3, 4, 5, 6, 7 };
-        public static int[] DiagonalSwing = { 4, 5, 6, 7 };
-        public static int[] PureVerticalSwing = { 0, 1 };
-        public static int[] PureHorizontalSwing = { 2, 3 };
-
-        public static double[] UpSwing = { 0, 4, 5 };
-        public static double[] DownSwing = { 1, 6, 7 };
-        public static double[] LeftSwing = { 2, 4, 6 };
-        public static double[] RightSwing = { 3, 5, 7 };
-        public static double[] UpLeftSwing = { 0, 2, 4 };
-        public static double[] DownLeftSwing = { 1, 2, 6 };
-        public static double[] UpRightSwing = { 0, 3, 5 };
-        public static double[] DownRightSwing = { 1, 3, 7 };
-
-        #endregion
+        public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315, 8 };
 
         public static void Swap<T>(IList<T> list, int indexA, int indexB)
         {
@@ -148,32 +131,9 @@ namespace BeatSaber_DynamicCurve.Algorithm
 
         public static bool SameDirection(double before, double after)
         {
-            switch (before)
+            if(before >= after - 67.5 && before <= after + 67.5)
             {
-                case 0:
-                    if (UpSwing.Contains(after)) return true;
-                    break;
-                case 1:
-                    if (DownSwing.Contains(after)) return true;
-                    break;
-                case 2:
-                    if (LeftSwing.Contains(after)) return true;
-                    break;
-                case 3:
-                    if (RightSwing.Contains(after)) return true;
-                    break;
-                case 4:
-                    if (UpLeftSwing.Contains(after)) return true;
-                    break;
-                case 5:
-                    if (UpRightSwing.Contains(after)) return true;
-                    break;
-                case 6:
-                    if (DownLeftSwing.Contains(after)) return true;
-                    break;
-                case 7:
-                    if (DownRightSwing.Contains(after)) return true;
-                    break;
+                return true;
             }
 
             return false;
@@ -186,10 +146,15 @@ namespace BeatSaber_DynamicCurve.Algorithm
                 var c = cubes.Where(ca => !ca.Assumed).FirstOrDefault();
                 if (c != null)
                 {
-                    int temp = 1;
+                    double temp = 270;
                     for (int i = 0; i < cubes.IndexOf(c); i++)
                     {
-                        temp = ReverseCutDirection((int)c.Note.cutDirection);
+                        var a = DirectionToDegree[(int)c.Note.cutDirection] + c.Note.angleOffset;
+                        if(a >= 360)
+                        {
+                            a -= 180;
+                        }
+                        temp = ReverseCutDirection(a);
                     }
                     cubes[0].Direction = temp;
                 }
@@ -197,17 +162,22 @@ namespace BeatSaber_DynamicCurve.Algorithm
                 {
                     if (cubes[0].Note.layer == 2)
                     {
-                        cubes[0].Direction = 0;
+                        cubes[0].Direction = 90;
                     }
                     else
                     {
-                        cubes[0].Direction = 1;
+                        cubes[0].Direction = 270;
                     }
                 }
             }
             else
             {
-                cubes[0].Direction = (int)cubes[0].Note.cutDirection;
+                var a = DirectionToDegree[(int)cubes[0].Note.cutDirection] + cubes[0].Note.angleOffset;
+                if (a >= 360)
+                {
+                    a -= 180;
+                }
+                cubes[0].Direction = a;
             }
 
             bool pattern = false;
@@ -219,7 +189,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
             for (int i = 1; i < cubes.Count(); i++)
             {
                 if (cubes[i].Beat - cubes[i - 1].Beat <= (0.25 / 200 * bpm) && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection ||
-                    cubes[i].Assumed || cubes[i - 1].Assumed || SameDirection((int)cubes[i - 1].Note.cutDirection, (int)cubes[i].Note.cutDirection)))
+                    cubes[i].Assumed || cubes[i - 1].Assumed || SameDirection(cubes[i - 1].Direction, DirectionToDegree[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset)))
                 {
                     if (!pattern)
                     {
@@ -253,7 +223,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
 
                 if (cubes[i].Assumed && !cubes[i].Pattern && !cubes[i].Bomb)
                 {
-                    cubes[i].Direction = ReverseCutDirection((int)cubes[i - 1].Note.cutDirection);
+                    cubes[i].Direction = ReverseCutDirection((int)cubes[i - 1].Direction);
                 }
                 else if (cubes[i].Assumed && cubes[i].Pattern)
                 {
@@ -263,362 +233,124 @@ namespace BeatSaber_DynamicCurve.Algorithm
                 {
                     if (bo.layer == 0)
                     {
-                        cubes[i].Direction = 1;
+                        cubes[i].Direction = 270;
                     }
                     else if (bo.layer == 1)
                     {
                         if (cubes[i].Layer == 0)
                         {
-                            cubes[i].Direction = 0;
+                            cubes[i].Direction = 90;
                         }
                         else
                         {
-                            cubes[i].Direction = 1;
+                            cubes[i].Direction = 270;
                         }
                     }
                     else if (bo.layer == 2)
                     {
-                        cubes[i].Direction = 0;
+                        cubes[i].Direction = 90;
                     }
                 }
                 else
                 {
-                    cubes[i].Direction = (int)cubes[i].Note.cutDirection;
+                    var a = DirectionToDegree[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset;
+                    if (a >= 360)
+                    {
+                        a -= 180;
+                    }
+                    cubes[i].Direction = a;
                 }
             }
         }
 
-        public static int ReverseCutDirection(int direction)
+        public static double ReverseCutDirection(double direction)
         {
-            switch(direction)
+            if (direction >= 180)
             {
-                case 0: return 1;
-                case 1: return 0;
-                case 2: return 3;
-                case 3: return 2;
-                case 4: return 7;
-                case 5: return 6;
-                case 6: return 5;
-                case 7: return 4;
-                default: return 8;
+                return direction - 180;
             }
-        }
-
-        public static bool IsLinearAndNotInverted(Cube previous, Cube current)
-        {
-            if(SameDirection(previous.Direction, current.Direction))
+            else
             {
-                return false;
+                return direction + 180;
             }
-
-            switch (previous.Direction)
-            {
-                case 0: 
-                    if(current.Layer <= previous.Layer && current.Line == previous.Line && (current.Direction == 1 || current.Direction == 6 || current.Direction == 7))
-                    {
-                        return true;
-                    }
-                    if(current.Layer < previous.Layer)
-                    {
-                        if(current.Line < previous.Line && (current.Direction == 1 || current.Direction == 2 || current.Direction == 6))
-                        {
-                            return true;
-                        }
-                        if (current.Line > previous.Line && (current.Direction == 1 || current.Direction == 3 || current.Direction == 7))
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 1:
-                    if (current.Layer >= previous.Layer && current.Line == previous.Line && (current.Direction == 0 || current.Direction == 4 || current.Direction == 5))
-                    {
-                        return true;
-                    }
-                    if (current.Layer > previous.Layer)
-                    {
-                        if (current.Line < previous.Line && (current.Direction == 0 || current.Direction == 2 || current.Direction == 4))
-                        {
-                            return true;
-                        }
-                        if (current.Line > previous.Line && (current.Direction == 0 || current.Direction == 3 || current.Direction == 5))
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 2:
-                    if (current.Layer == previous.Line && current.Line >= previous.Line && (current.Direction == 3 || current.Direction == 5 || current.Direction == 7))
-                    {
-                        return true;
-                    }
-                    if (current.Line > previous.Line)
-                    {
-                        if (current.Layer < previous.Layer && (current.Direction == 1 || current.Direction == 3 || current.Direction == 7))
-                        {
-                            return true;
-                        }
-                        if (current.Layer > previous.Layer && (current.Direction == 0 || current.Direction == 3 || current.Direction == 5))
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 3:
-                    if (current.Layer == previous.Line && current.Line <= previous.Line && (current.Direction == 2 || current.Direction == 4 || current.Direction == 6))
-                    {
-                        return true;
-                    }
-                    if (current.Line < previous.Line)
-                    {
-                        if (current.Layer < previous.Layer && (current.Direction == 1 || current.Direction == 2 || current.Direction == 6))
-                        {
-                            return true;
-                        }
-                        if (current.Layer > previous.Layer && (current.Direction == 0 || current.Direction == 2 || current.Direction == 4))
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 4:
-                    if (current.Layer <= previous.Layer && current.Line >= previous.Line)
-                    {
-                        if(current.Direction == 7)
-                        {
-                            return true;
-                        }
-                        if(current.Layer < previous.Layer && current.Direction == 1)
-                        {
-                            return true;
-                        }
-                        if (current.Layer == previous.Layer && current.Direction == 5)
-                        {
-                            return true;
-                        }
-                        if (current.Line > previous.Line && current.Direction == 3)
-                        {
-                            return true;
-                        }
-                        if (current.Line == previous.Line && current.Direction == 6)
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 5:
-                    if (current.Layer <= previous.Layer && current.Line <= previous.Line)
-                    {
-                        if (current.Direction == 6)
-                        {
-                            return true;
-                        }
-                        if (current.Layer < previous.Layer && current.Direction == 1)
-                        {
-                            return true;
-                        }
-                        if (current.Layer == previous.Layer && current.Direction == 4)
-                        {
-                            return true;
-                        }
-                        if (current.Line < previous.Line && current.Direction == 2)
-                        {
-                            return true;
-                        }
-                        if (current.Line == previous.Line && current.Direction == 7)
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 6:
-                    if (current.Layer >= previous.Layer && current.Line >= previous.Line)
-                    {
-                        if (current.Direction == 5)
-                        {
-                            return true;
-                        }
-                        if (current.Layer > previous.Layer && current.Direction == 0)
-                        {
-                            return true;
-                        }
-                        if (current.Layer == previous.Layer && current.Direction == 7)
-                        {
-                            return true;
-                        }
-                        if (current.Line > previous.Line && current.Direction == 3)
-                        {
-                            return true;
-                        }
-                        if (current.Line == previous.Line && current.Direction == 4)
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                case 7:
-                    if (current.Layer >= previous.Layer && current.Line >= previous.Line)
-                    {
-                        if (current.Direction == 4)
-                        {
-                            return true;
-                        }
-                        if (current.Layer > previous.Layer && current.Direction == 0)
-                        {
-                            return true;
-                        }
-                        if (current.Layer == previous.Layer && current.Direction == 6)
-                        {
-                            return true;
-                        }
-                        if (current.Line < previous.Line && current.Direction == 2)
-                        {
-                            return true;
-                        }
-                        if (current.Line == previous.Line && current.Direction == 5)
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                default: return false;
-            }
-
-            return false;
         }
 
         public static bool IsInLinearPath(Cube previous, Cube current, Cube next)
         {
-            if(previous.Line == current.Line)
+            var prev = CalculateBaseEntryExit((previous.Line, previous.Layer), previous.Direction);
+            var curr = CalculateBaseEntryExit((current.Line, current.Layer), current.Direction);
+            ((double x, double y) entry, (double x, double y) exit) nxt;
+            if (SameDirection(previous.Direction, next.Direction))
             {
-                if(current.Line == next.Line)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                nxt = CalculateBaseEntryExit((next.Line, next.Layer), previous.Direction);
             }
-            if (previous.Layer == current.Layer)
+            else
             {
-                if (current.Layer == next.Layer)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                nxt = CalculateBaseEntryExit((next.Line, next.Layer), next.Direction);
             }
 
-            float a = (current.Layer - previous.Layer) / (current.Line - previous.Line);
-            float b = previous.Layer - a * previous.Line;
-            if (Math.Abs(next.Layer - (a * next.Line + b)) < 0.001f)
+            var dxc = nxt.entry.x - prev.entry.x;
+            var dyc = nxt.entry.y - prev.entry.y;
+
+            var dxl = curr.exit.x - prev.entry.x;
+            var dyl = curr.exit.y - prev.entry.y;
+
+            var cross = dxc * dyl - dyc * dxl;
+            if (cross != 0)
+            {
+                return false;
+            }
+            else
             {
                 return true;
             }
-
-            return false;
+        }
+       
+        public static double ConvertDegreesToRadians(double degrees)
+        {
+            double radians = degrees * (Math.PI / 180f);
+            return (radians);
         }
 
-        public static int count = 0;
-        public static int linear = 0;
-        public static int slider = 0;
-
-        // Consider exact same direction for 3 notes in a row "linear"
-        public static void DetectLinear(List<Cube> cubes)
+        public static ((double x, double y) entry, (double x, double y) exit) CalculateBaseEntryExit((double x, double y) position, double angle)
         {
-            count = 0;
-            linear = 0;
-            slider = 0;
+            (double, double) entry = (position.x * 0.333333 - Math.Cos(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667,
+                position.y * 0.333333 - Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667);
 
-            // First note will always be considered linear
+            (double, double) exit = (position.x * 0.333333 + Math.Cos(ConvertDegreesToRadians(angle)) * 0.166667f + 0.166667,
+                position.y * 0.333333 + Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667);
+
+            return (entry, exit);
+        }
+
+        public static void CalculateDistance(List<Cube> cubes)
+        {
+            Cube pre = cubes[1];
+            Cube pre2 = cubes[0];
+
             cubes[0].Linear = true;
-            linear++;
-            count++;
-
-            if (IsLinearAndNotInverted(cubes[0], cubes[1]))
-            {
-                cubes[1].Linear = true;
-                linear++;
-                count++;
-            }
+            cubes[1].Linear = true;
 
             for (int i = 2; i < cubes.Count(); i++)
             {
-                if (cubes[i].Head || !cubes[i].Pattern)
+                if (!cubes[i].Pattern || cubes[i].Head)
                 {
-                    if (cubes[i].Slider)
+                    if(!IsInLinearPath(pre2, pre, cubes[i]))
                     {
-                        slider++;
-                    }
-                    count++;
-                    if (cubes[i].Reset)
-                    {
-                        // Reset will be considered non-linear unless the placement is exactly the same
-                        if (cubes[i - 1].Line == cubes[i].Line && cubes[i - 1].Layer == cubes[i].Layer)
-                        {
-                            cubes[i].Linear = true;
-                            linear++;
-                        }
-                    }
-                    else // Not a reset
-                    {
-                        if (IsLinearAndNotInverted(cubes[i - 1], cubes[i]))
-                        {
-                            if (IsInLinearPath(cubes[i - 2], cubes[i - 1], cubes[i]))
-                            {
-                                cubes[i].Linear = true;
-                                linear++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        public static bool IsInverted(Cube previous, Cube current)
-        {
-            if (RightSwing.Contains(current.Direction) && current.Line < previous.Line)
-            {
-                return true;
-            }
-            if (LeftSwing.Contains(current.Direction) && current.Line > previous.Line)
-            {
-                return true;
-            }
-            if (DownSwing.Contains(current.Direction) && current.Layer > previous.Line)
-            {
-                return true;
-            }
-            if (UpSwing.Contains(current.Direction) && current.Layer < previous.Line)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public static void CalculateMovement(List<Cube> cubes)
-        {
-            for(int i = 1; i < cubes.Count(); i++)
-            {
-                if ((!cubes[i].Linear && !cubes[i].Pattern) || (!cubes[i].Linear && cubes[i].Head))
-                {
-                    var distance = Math.Sqrt(Math.Pow(cubes[i].Line - cubes[i - 1].Line, 2) + Math.Pow(cubes[i].Layer - cubes[i - 1].Layer, 2));
-                    if (IsInverted(cubes[i - 1], cubes[i]))
-                    {
-                        Curve.movement += distance * 1.5;
+                        var prev = CalculateBaseEntryExit((pre.Line, pre.Layer), pre.Direction);
+                        var now = CalculateBaseEntryExit((cubes[i].Line, cubes[i].Layer), cubes[i].Direction);
+                        var distance = Math.Sqrt(Math.Pow(now.exit.x - prev.entry.x, 2) + Math.Pow(now.exit.y - prev.entry.y, 2));
+                        cubes[i].Distance = distance;
                     }
                     else
                     {
-                        Curve.movement += distance;
+                        cubes[i].Linear = true;
                     }
+
+                    pre2 = pre;
+                    pre = cubes[i];
                 }
             }
-
-            Curve.movement /= count;
         }
     }
 }

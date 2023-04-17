@@ -15,6 +15,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
         public bool Pattern { get; set; } = false;
         public bool Slider { get; set; } = false;
         public bool Linear { get; set; } = false;
+        public double Distance { get; set; } = 0;
 
         public Cube(ColorNoteData note)
         {
