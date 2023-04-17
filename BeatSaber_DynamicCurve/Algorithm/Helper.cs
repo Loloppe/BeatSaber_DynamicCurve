@@ -604,7 +604,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
         {
             for(int i = 1; i < cubes.Count(); i++)
             {
-                if (!cubes[i].Linear)
+                if ((!cubes[i].Linear && !cubes[i].Pattern) || (!cubes[i].Linear && cubes[i].Head))
                 {
                     var distance = Math.Sqrt(Math.Pow(cubes[i].Line - cubes[i - 1].Line, 2) + Math.Pow(cubes[i].Layer - cubes[i - 1].Layer, 2));
                     if (IsInverted(cubes[i - 1], cubes[i]))

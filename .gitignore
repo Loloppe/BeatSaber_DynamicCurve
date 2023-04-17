@@ -3,3 +3,7 @@
 ################################################################################
 
 /.vs/BeatSaber_DynamicCurve
+/BeatSaber_DynamicCurve/obj/Debug
+/BeatSaber_DynamicCurve/obj
+/BeatSaber_DynamicCurve/bin/Release
+/.vs

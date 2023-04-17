@@ -103,7 +103,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithm\BeatmapsUtil.cs" />
     <Compile Include="Algorithm\Cube.cs" />
     <Compile Include="Algorithm\Curve.cs" />
     <Compile Include="Algorithm\Helper.cs" />

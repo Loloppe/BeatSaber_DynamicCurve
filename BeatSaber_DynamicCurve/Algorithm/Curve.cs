@@ -57,11 +57,11 @@ namespace BeatSaber_DynamicCurve.Algorithm
             {
                 if(i <= 15)
                 {
-                    finalY[i] = curveY[i] * (1 + (0.15 * (Helper.slider / Helper.count * 2)));
+                    finalY[i] = curveY[i] * (1 + (0.15 * ((double)Helper.slider / Helper.count * 2)));
                 }
                 else
                 {
-                    finalY[i] = curveY[i] * (1 - (0.95 * (Helper.slider / Helper.count * 2)));
+                    finalY[i] = curveY[i] * (1 + (-0.15 * ((double)Helper.slider / Helper.count * 2)));
                 }
             }
 
