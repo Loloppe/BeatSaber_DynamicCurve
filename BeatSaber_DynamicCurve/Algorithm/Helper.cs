@@ -121,7 +121,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
                     continue;
                 }
 
-                if (SameDirection(cubes[i - 1].Direction, cubes[i].Direction))
+                if (IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction))
                 {
                     cubes[i].Reset = true;
                     continue;
@@ -129,7 +129,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
             }
         }
 
-        public static bool SameDirection(double before, double after)
+        public static bool IsSameDirection(double before, double after)
         {
             if(before - after <= 180)
             {
@@ -201,7 +201,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
             for (int i = 1; i < cubes.Count(); i++)
             {
                 if (cubes[i].Beat - cubes[i - 1].Beat <= (0.25 / 200 * bpm) && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection ||
-                    cubes[i].Assumed || cubes[i - 1].Assumed || SameDirection(cubes[i - 1].Direction, DirectionToDegree[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset)))
+                    cubes[i].Assumed || cubes[i - 1].Assumed || IsSameDirection(cubes[i - 1].Direction, DirectionToDegree[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset)))
                 {
                     if (!pattern)
                     {
@@ -292,7 +292,7 @@ namespace BeatSaber_DynamicCurve.Algorithm
             var prev = CalculateBaseEntryExit((previous.Line, previous.Layer), previous.Direction);
             var curr = CalculateBaseEntryExit((current.Line, current.Layer), current.Direction);
             ((double x, double y) entry, (double x, double y) exit) nxt;
-            if (SameDirection(previous.Direction, next.Direction))
+            if (IsSameDirection(previous.Direction, next.Direction))
             {
                 nxt = CalculateBaseEntryExit((next.Line, next.Layer), previous.Direction);
             }
@@ -343,19 +343,21 @@ namespace BeatSaber_DynamicCurve.Algorithm
             cubes[0].Linear = true;
             cubes[1].Linear = true;
 
-            for (int i = 2; i < cubes.Count(); i++)
+            for (int i = 1; i < cubes.Count(); i++)
             {
                 if (!cubes[i].Pattern || cubes[i].Head)
                 {
-                    if(!IsInLinearPath(pre2, pre, cubes[i]))
+                    var prev = CalculateBaseEntryExit((pre.Line, pre.Layer), pre.Direction);
+                    var now = CalculateBaseEntryExit((cubes[i].Line, cubes[i].Layer), cubes[i].Direction);
+                    var distance = Math.Sqrt(Math.Pow(now.exit.x - prev.entry.x, 2) + Math.Pow(now.exit.y - prev.entry.y, 2));
+
+                    if (!IsInLinearPath(pre2, pre, cubes[i]))
                     {
-                        var prev = CalculateBaseEntryExit((pre.Line, pre.Layer), pre.Direction);
-                        var now = CalculateBaseEntryExit((cubes[i].Line, cubes[i].Layer), cubes[i].Direction);
-                        var distance = Math.Sqrt(Math.Pow(now.exit.x - prev.entry.x, 2) + Math.Pow(now.exit.y - prev.entry.y, 2));
                         cubes[i].Distance = distance;
                     }
                     else
                     {
+                        cubes[i].Distance = distance * Curve.linear;
                         cubes[i].Linear = true;
                     }
 
